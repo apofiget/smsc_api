@@ -1,0 +1,6 @@
+* SMSC HTTP API Erlang implementation
+** Requirements
+    * Rebar (https://github.com/basho/rebar)
+    * ibrowse (https://github.com/cmullaparthi/ibrowse)
+    * jsx (https://github.com/talentdeficit/jsx)
+

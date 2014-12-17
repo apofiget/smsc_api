@@ -1,0 +1,15 @@
+{application, smsc_lib,
+ [
+  {description, "SMSC API"},
+  {vsn, "0.1"},
+  {registered, [smsc_lib]},
+  {modules,[
+    unifi
+  ]},
+  {applications, [
+                  kernel,
+                  stdlib
+                 ]},
+  {mod, { smsc_lib, []}},
+  {env, []}
+]}.
