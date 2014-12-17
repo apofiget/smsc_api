@@ -1,4 +1,4 @@
-* SMSC HTTP API Erlang implementation
+* Unofficial Erlang implementation of SMSC HTTP API
 ** Requirements
     * Rebar (https://github.com/basho/rebar)
     * ibrowse (https://github.com/cmullaparthi/ibrowse)
