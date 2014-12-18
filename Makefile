@@ -14,6 +14,6 @@ doc:
 	@$(REBAR) doc
 
 start:
-	ERL_LIBS=deps erl -pa ebin deps/*/ebin -sname smsc
+	ERL_LIBS=deps erl -pa ebin deps/*/ebin -sname smsc +pc unicode
 
 .PHONY: compile
