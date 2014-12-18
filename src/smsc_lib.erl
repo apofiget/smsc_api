@@ -17,7 +17,7 @@ init() ->
 
 %% Send SMS
 %% http://smsc.ru/api/http/#send - optional parameters described here
-%% All request send with fmt=3, e.g. wait JSON as answer body
+%% All request send with fmt=3, i.e. wait JSON as answer body
 -spec(send_sms(Login :: string(), Pass :: string(), Phones :: list(), Message :: string(), Opts :: list()) -> {ok, Id :: string()} | {ok, Obj :: list()} | {error, Message :: binary()}).
 send_sms(_Login, _Pass, _Phones, Message, _Opts) when length(Message) > 800 ->
     {error, "Too long message"};
@@ -28,18 +28,26 @@ send_sms(Login, Pass, Phones, Message, Opts) ->
                             Oplist, "&fmt=3", "&id=", uuid()]),
     get_reply(?URL ++ "send.php", Request, ?ERR_CODE).
 
-%% Send HLR request
+%% Send hlr request
 -spec(send_hlr(Login :: string(), Pass :: string(), Phones :: list()) -> {ok, Id :: string()} | {error, Message :: binary()}).
 send_hlr(Login, Pass, Phones) ->
     Request = lists:concat(["login=", Login, "&psw=", Pass, "&phones=", string:join(Phones, ";"), "&hlr=1&fmt=3", "&id=", uuid()]),
-    get_reply(?URL ++ "send.php", Request, ?SMS_HLR_CODE).
+    get_reply(?URL ++ "send.php", Request, ?STATUS_CODE).
 
-%% Get message status by Id
+%% Get sms/hlr status by Id
 -spec(get_status(Login :: string(), Pass :: string(), Phones :: list(), Ids :: list()) -> {ok, Reply :: list()} | {error, Message :: binary()}).
 get_status(Login, Pass, Phones, Ids) ->
     Request = lists:concat(["login=", Login, "&psw=", Pass, "&phone=", string:join(Phones, ","), "&fmt=3", "&id=", string:join(Ids, ",")]),
-    get_reply(?URL ++ "status.php", Request, ?STATUS_CODE).
-
+    case get_reply(?URL ++ "status.php", Request, ?STATUS_CODE) of
+        {ok, Obj} ->
+            Err = proplists:get_value(err, Obj),
+            if Err == 0 ->
+                    {ok, Obj};
+               true ->
+                    {error, proplists:get_value(Err, ?SMS_HRL_ERR_CODE)}
+            end;
+        Any -> Any
+    end.
 
 
 %% Internals
