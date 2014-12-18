@@ -26,39 +26,39 @@ send_sms(Login, Pass, Phones, Message, Opts) ->
     Oplist = lists:concat(lists:foldl(fun({K,V}, Acc) -> ["&" ++ atom_to_list(K) ++ "=" ++ V  | Acc] end, [], Opts)),
     Request = lists:concat(["login=", Login, "&psw=", Pass, "&phones=", string:join(Phones, ";"), "&mes=", to_cp1251(Message),
                             Oplist, "&fmt=3", "&id=", uuid()]),
-    get_reply(?URL ++ "send.php", Request).
+    get_reply(?URL ++ "send.php", Request, ?ERR_CODE).
 
 %% Send HLR request
 -spec(send_hlr(Login :: string(), Pass :: string(), Phones :: list()) -> {ok, Id :: string()} | {error, Message :: binary()}).
 send_hlr(Login, Pass, Phones) ->
     Request = lists:concat(["login=", Login, "&psw=", Pass, "&phones=", string:join(Phones, ";"), "&hlr=1&fmt=3", "&id=", uuid()]),
-    get_reply(?URL ++ "send.php", Request).
+    get_reply(?URL ++ "send.php", Request, ?SMS_HLR_CODE).
 
 %% Get message status by Id
 -spec(get_status(Login :: string(), Pass :: string(), Phones :: list(), Ids :: list()) -> {ok, Reply :: list()} | {error, Message :: binary()}).
 get_status(Login, Pass, Phones, Ids) ->
     Request = lists:concat(["login=", Login, "&psw=", Pass, "&phone=", string:join(Phones, ","), "&fmt=3", "&id=", string:join(Ids, ",")]),
-    get_reply(?URL ++ "status.php", Request).
+    get_reply(?URL ++ "status.php", Request, ?STATUS_CODE).
 
 
 
 %% Internals
 %% Get JSON from application service
 %% @hidden
-get_reply(Url, Request) ->
+get_reply(Url, Request, Err) ->
     case ibrowse:send_req(Url, [{"Content-Type", "application/x-www-form-urlencoded"}], post, Request, [{response_format, binary}]) of
-        {ok, "200", _Headers, Body} -> decode_reply(Body);
+        {ok, "200", _Headers, Body} -> decode_reply(Body, Err);
         Any -> {error, Any}
     end.
 
 %% Decode JSON and parse reply
 %% @hidden
-decode_reply(Json) ->
+decode_reply(Json, Err) ->
     try jsx:decode(Json, [{labels, atom}]) of
         Obj -> case proplists:get_value(error_code, Obj) of
                    undefined -> try {ok, binary_to_list(proplists:get_value(id, Obj))}
                                 catch _:_ -> {ok, Obj} end;
-                   Code -> {error, proplists:get_value(Code, ?ERR_CODE)}
+                   Code -> {error, proplists:get_value(Code, Err)}
                end
     catch _:_ ->
             {error, <<"Json parse error">>}
