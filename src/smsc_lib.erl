@@ -16,7 +16,7 @@ init() ->
     end.
 
 %% Send SMS
--spec(send_sms(Login :: string(), Pass :: string(), Phones :: list(), Message :: string(), Opts :: list()) -> {ok, Id :: string()} | {error, Message :: binary()}).
+-spec(send_sms(Login :: string(), Pass :: string(), Phones :: list(), Message :: string(), Opts :: list()) -> {ok, Id :: string()} | {ok, Obj :: list()} | {error, Message :: binary()}).
 send_sms(_Login, _Pass, _Phones, Message, _Opts) when length(Message) > 800 ->
     {error, "Too long message"};
 
