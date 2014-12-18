@@ -17,6 +17,9 @@ init() ->
 
 %% Send SMS
 -spec(send_sms(Login :: string(), Pass :: string(), Phones :: list(), Message :: string(), Opts :: list()) -> {ok, Id :: string()} | {error, Message :: binary()}).
+send_sms(_Login, _Pass, _Phones, Message, _Opts) when length(Message) > 800 ->
+    {error, "Too long message"};
+
 send_sms(Login, Pass, Phones, Message, Opts) ->
     Oplist = lists:concat(lists:foldl(fun({K,V}, Acc) -> ["&" ++ atom_to_list(K) ++ "=" ++ V  | Acc] end, [], Opts)),
     Request = lists:concat(["login=", Login, "&psw=", Pass, "&phones=", string:join(Phones, ";"), "&mes=", to_cp1251(Message),
