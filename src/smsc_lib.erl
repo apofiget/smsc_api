@@ -5,7 +5,7 @@
 -include("../include/smsc.hrl").
 
 -export([init/0, send_sms/5, send_hlr/3,
-         get_status/4]).
+         get_status/4, del_req/4]).
 
 -spec(init() -> ok | {error, Message :: string()}).
 init() ->
@@ -49,6 +49,16 @@ get_status(Login, Pass, Phones, Ids) ->
         Any -> Any
     end.
 
+%% Delete sms/hlr by Id
+-spec(del_req(Login :: string(), Pass :: string(), Phones :: list(), Ids :: list()) -> {ok, Reply :: list()} | {error, Message :: binary()}).
+del_req(Login, Pass, Phones, Ids) ->
+    Request = lists:concat(["login=", Login, "&psw=", Pass, "&phone=", string:join(Phones, ","), "&fmt=3", "&id=", string:join(Ids, ","), "&del=1"]),
+    case get_reply(?URL ++ "status.php", Request, ?STATUS_CODE) of
+        {error, <<"OK">>} ->
+            ok;
+        Any -> Any
+    end.
+
 
 %% Internals
 %% Get JSON from application service
@@ -69,7 +79,7 @@ decode_reply(Json, Err) ->
                    Code -> {error, proplists:get_value(Code, Err)}
                end
     catch _:_ ->
-            {error, <<"Json parse error">>}
+            {error, Json}
     end.
 
 
