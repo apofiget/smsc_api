@@ -3,7 +3,7 @@
 
 -define(URL, "http://smsc.ru/sys/").
 
-%% Error code in server response
+%% Error code in server response when try to send message
 -define(ERR_CODE, [{1, <<"Ошибка в параметрах."/utf8>>},
                    {2, <<"Неверный логин или пароль."/utf8>>},
                    {3, <<"Недостаточно средств на счете Клиента."/utf8>>},

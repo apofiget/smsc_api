@@ -17,6 +17,7 @@ init() ->
 
 %% Send SMS
 %% http://smsc.ru/api/http/#send - optional parameters described here
+%% All request send with fmt=3, e.g. wait JSON as answer body
 -spec(send_sms(Login :: string(), Pass :: string(), Phones :: list(), Message :: string(), Opts :: list()) -> {ok, Id :: string()} | {ok, Obj :: list()} | {error, Message :: binary()}).
 send_sms(_Login, _Pass, _Phones, Message, _Opts) when length(Message) > 800 ->
     {error, "Too long message"};
@@ -25,29 +26,29 @@ send_sms(Login, Pass, Phones, Message, Opts) ->
     Oplist = lists:concat(lists:foldl(fun({K,V}, Acc) -> ["&" ++ atom_to_list(K) ++ "=" ++ V  | Acc] end, [], Opts)),
     Request = lists:concat(["login=", Login, "&psw=", Pass, "&phones=", string:join(Phones, ";"), "&mes=", to_cp1251(Message),
                             Oplist, "&fmt=3", "&id=", uuid()]),
-    get_array(?URL ++ "send.php", Request).
+    get_reply(?URL ++ "send.php", Request).
 
 %% Send HLR request
 -spec(send_hlr(Login :: string(), Pass :: string(), Phones :: list()) -> {ok, Id :: string()} | {error, Message :: binary()}).
 send_hlr(Login, Pass, Phones) ->
     Request = lists:concat(["login=", Login, "&psw=", Pass, "&phones=", string:join(Phones, ";"), "&hlr=1&fmt=3", "&id=", uuid()]),
-    get_array(?URL ++ "send.php", Request).
+    get_reply(?URL ++ "send.php", Request).
 
 %% Get message status by Id
 -spec(get_status(Login :: string(), Pass :: string(), Phones :: list(), Ids :: list()) -> {ok, Reply :: list()} | {error, Message :: binary()}).
 get_status(Login, Pass, Phones, Ids) ->
     Request = lists:concat(["login=", Login, "&psw=", Pass, "&phone=", string:join(Phones, ","), "&fmt=3", "&id=", string:join(Ids, ",")]),
-    get_array(?URL ++ "status.php", Request).
+    get_reply(?URL ++ "status.php", Request).
 
 
 
 %% Internals
 %% Get JSON from application service
 %% @hidden
-get_array(Url, Request) ->
+get_reply(Url, Request) ->
     case ibrowse:send_req(Url, [{"Content-Type", "application/x-www-form-urlencoded"}], post, Request, [{response_format, binary}]) of
         {ok, "200", _Headers, Body} -> decode_reply(Body);
-        Any -> Any
+        Any -> {error, Any}
     end.
 
 %% Decode JSON and parse reply
