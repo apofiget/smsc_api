@@ -5,7 +5,7 @@
 -include("../include/smsc.hrl").
 
 -export([init/0, send_sms/5, send_hlr/3,
-         get_status/4, del_req/4]).
+         get_status/4, del_req/4, get_balance/2]).
 
 -spec(init() -> ok | {error, Message :: string()}).
 init() ->
@@ -59,6 +59,15 @@ del_req(Login, Pass, Phones, Ids) ->
         Any -> Any
     end.
 
+%% Get balance
+-spec(get_balance(Login :: string(), Pass :: string()) -> {ok, Balance :: string()} | {error, Message :: binary()}).
+get_balance(Login, Pass) ->
+    Request = lists:concat(["login=", Login, "&psw=", Pass, "&cur=0&fmt=3"]),
+    case get_reply(?URL ++ "balance.php", Request, ?BALANCE_CODE) of
+        {ok, Obj} ->
+            {ok, proplists:get_value(balance, Obj)};
+        Any -> Any
+    end.
 
 %% Internals
 %% Get JSON from application service
