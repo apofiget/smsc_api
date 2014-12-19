@@ -63,10 +63,10 @@ del_req(Login, Pass, Phones, Ids) ->
 %% __With cur=1, service return bad JSON object__
 -spec(get_balance(Login :: string(), Pass :: string()) -> {ok, Balance :: string()} | {error, Message :: binary()}).
 get_balance(Login, Pass) ->
-    Request = lists:concat(["login=", Login, "&psw=", Pass, "&cur=0&fmt=3"]),
+    Request = lists:concat(["login=", Login, "&psw=", Pass, "&cur=1&fmt=3"]),
     case get_reply(?URL ++ "balance.php", Request, ?BALANCE_CODE) of
         {ok, Obj} ->
-            {ok, proplists:get_value(balance, Obj)};
+            {ok, proplists:get_value(balance, Obj), proplists:get_value(currency, Obj)};
         Any -> Any
     end.
 
