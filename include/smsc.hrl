@@ -22,7 +22,7 @@
                       {5, <<"Ошибка удаления сообщения."/utf8>>},
                       {9, <<"Попытка отправки более пяти запросов на получение статуса одного и того же сообщения в течение минуты."/utf8>>}]).
 
-%% Error code in sms or hlr response - field <status>
+%% Error code in sms/hlr response - field <status>
 -define(SMS_HLR_STATUS_CODE, [{-3,  <<"Сообщение не найдено"/utf8>>},
                               {-1, <<"Ожидает отправки"/utf8>>},
                               {0,  <<"Передано оператору"/utf8>>},
@@ -34,7 +34,7 @@
                               {24, <<"Недостаточно средств"/utf8>>},
                               {25, <<"Недоступный номер"/utf8>>}]).
 
-%% Error code in sms or hlr response - field <err>
+%% Error code in sms/hlr response - field <err>
 -define(SMS_HRL_ERR_CODE,  [{0, <<"Нет ошибки"/utf8>>},
                             {1, <<"Абонент не существует"/utf8>>},
                             {6, <<"Абонент не в сети"/utf8>>},
