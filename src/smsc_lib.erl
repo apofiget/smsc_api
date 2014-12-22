@@ -5,7 +5,8 @@
 -include("../include/smsc.hrl").
 
 -export([init/0, send_sms/5, send_hlr/3,
-         get_status/4, del_req/4, get_balance/2]).
+         get_status/4, del_req/4, get_balance/2,
+         get_oper_info/3]).
 
 -spec(init() -> ok | {error, Message :: string()}).
 init() ->
@@ -60,7 +61,6 @@ del_req(Login, Pass, Phones, Ids) ->
     end.
 
 %% Get balance
-%% __With cur=1, service return bad JSON object__
 -spec(get_balance(Login :: string(), Pass :: string()) -> {ok, Balance :: string()} | {error, Message :: binary()}).
 get_balance(Login, Pass) ->
     Request = lists:concat(["login=", Login, "&psw=", Pass, "&cur=1&fmt=3"]),
@@ -69,6 +69,12 @@ get_balance(Login, Pass) ->
             {ok, proplists:get_value(balance, Obj), proplists:get_value(currency, Obj)};
         Any -> Any
     end.
+
+%% Get operator
+-spec(get_oper_info(Login :: string(), Pass :: string(), Phone :: string()) -> {ok, Info :: list()} | {error, Message :: binary()}).
+get_oper_info(Login, Pass, Phone) ->
+    Request = lists:concat(["login=", Login, "&psw=", Pass, "&get_operator=1&fmt=3&phone=",Phone]),
+    get_reply(?URL ++ "info.php", Request, ?OPER_CODE).
 
 %% Internals
 %% Get JSON from application service
