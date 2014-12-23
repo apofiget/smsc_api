@@ -6,7 +6,7 @@
 
 -export([init/0, send_sms/5, send_hlr/3,
          get_status/4, del_req/4, get_balance/2,
-         get_oper_info/3]).
+         get_oper_info/3, get_stat/4]).
 
 -spec(init() -> ok | {error, Message :: string()}).
 init() ->
@@ -75,6 +75,12 @@ get_balance(Login, Pass) ->
 get_oper_info(Login, Pass, Phone) ->
     Request = lists:concat(["login=", Login, "&psw=", Pass, "&get_operator=1&fmt=3&phone=",Phone]),
     get_reply(?URL ++ "info.php", Request, ?OPER_CODE).
+
+%% Get account statistics
+-spec(get_stat(Login :: string(), Pass :: string(), Start :: string(), End :: string()) -> {ok, Info :: list()} | {error, Message :: binary()}).
+get_stat(Login, Pass, Start, End) ->
+    Request = lists:concat(["login=", Login, "&psw=", Pass, "&get_stat=1&fmt=3&mycur=1&start=",Start, "&end=",End]),
+    get_reply(?URL ++ "get.php", Request, ?OPER_CODE).
 
 %% Internals
 %% Get JSON from application service
