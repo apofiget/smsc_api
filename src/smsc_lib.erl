@@ -27,7 +27,8 @@ send_sms(_Login, _Pass, _Phones, Message, _Opts) when length(Message) > 800 ->
     {error, "Too long message"};
 
 send_sms(Login, Pass, Phones, Message, Opts) ->
-    Oplist = lists:concat(lists:foldl(fun({K,V}, Acc) -> ["&" ++ atom_to_list(K) ++ "=" ++ V  | Acc] end, [], Opts)),
+    Ops = lists:foldl(fun(K, L) -> proplists:delete(K,L) end, Opts, [login,psw,phones,mes,fmt,id]),
+    Oplist = lists:concat(lists:foldl(fun({K,V}, Acc) -> ["&" ++ atom_to_list(K) ++ "=" ++ V  | Acc] end, [], Ops)),
     Request = lists:concat(["login=", Login, "&psw=", Pass, "&phones=", string:join(Phones, ";"), "&mes=", to_cp1251(Message),
                             Oplist, "&fmt=3", "&id=", uuid()]),
     get_reply(?URL ++ "send.php", Request, ?ERR_CODE).
