@@ -9,6 +9,8 @@
          get_oper_info/3, get_stat/4, send_ping_sms/3,
          send_flash_sms/4]).
 
+%% Init dependent applications
+%% This function must executed before use all other.
 -spec(init() -> ok | {error, Message :: string()}).
 init() ->
     try [ok,ok,ok,ok,ok] = [application:ensure_started(A) || A <- [asn1, crypto, public_key, ssl, ibrowse]] of
@@ -240,6 +242,8 @@ to_cp1251(Str) ->
               end
       end, Str).
 
+%% Generate message ID
+%% @hidden
 uuid() ->
     <<A:32, B:16, C:16, D:16, E:48>> = crypto:rand_bytes(16),
     lists:concat(io_lib:format("~8.16.0b~4.16.0b4~3.16.0b~4.16.0b~12.16.0b",
