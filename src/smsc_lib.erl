@@ -38,7 +38,7 @@ send_ping_sms(Login, Pass, Phone) ->
     Request = lists:concat(["login=", Login, "&psw=", Pass, "&phones=", Phone, "&ping=1&fmt=3", "&id=", uuid()]),
     get_reply(?URL ++ "send.php", Request, ?STATUS_CODE).
 
-%% Send ping SMS
+%% Send flash SMS
 -spec(send_flash_sms(Login :: string(), Pass :: string(), Phones :: list(), Message :: string()) -> {ok, Id :: string(), Num :: integer()} | {ok, Obj :: list()} | {error, Message :: binary()}).
 send_flash_sms(Login, Pass, Phones, Message) ->
     send_sms(Login, Pass, Phones, Message,[{flash,"1"}]).
