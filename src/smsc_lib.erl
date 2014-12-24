@@ -1,4 +1,9 @@
 %% -*- coding: utf-8 -*-
+%% @author Andrey Andruschenko <apofiget@gmail.com>
+%% @version 0.3
+%% @doc Unofficial Erlang SMSC API
+%% @reference <a href="http://smsc.ru/api/">SMSC API description and code examples</a>;
+%% @end
 -module(smsc_lib).
 -author("Andrey Andruschenko <apofiget@gmail.com>").
 
@@ -9,8 +14,14 @@
          get_oper_info/3, get_stat/4, send_ping_sms/3,
          send_flash_sms/4]).
 
-%% Init dependent applications
-%% This function must executed before use all other.
+-type opts() :: [option()].
+%% Send SMS options list
+-type option() :: {atom(), Some :: term()}.
+%% Send SMS option tuple. Options described <a href="http://smsc.ru/api/http/#send">here</a>
+
+%% @doc Start dependence application.
+%% Use it first, before all other functions.
+%% @end
 -spec(init() -> ok | {error, Message :: string()}).
 init() ->
     try [ok,ok,ok,ok,ok] = [application:ensure_started(A) || A <- [asn1, crypto, public_key, ssl, ibrowse]] of
@@ -19,10 +30,10 @@ init() ->
             {error, "Some dependence application not stated"}
     end.
 
-%% Send SMS
-%% http://smsc.ru/api/http/#send - optional parameters described here
-%% All request send with fmt=3, i.e. wait JSON as answer body
--spec(send_sms(Login :: string(), Pass :: string(), Phones :: list(), Message :: string(), Opts :: list()) -> {ok, Id :: string(), Num :: integer()} | {ok, Obj :: list()} | {error, Message :: binary()}).
+%% @doc Send SMS.
+%% Optional parameters described <a href="http://smsc.ru/api/http/#send">here</a>
+%% @end
+-spec(send_sms(Login :: string(), Pass :: string(), Phones :: list(), Message :: string(), Opts :: opts()) -> {ok, Id :: string(), Num :: integer()} | {ok, Obj :: list()} | {error, Message :: binary()}).
 send_sms(_Login, _Pass, _Phones, Message, _Opts) when length(Message) > 800 ->
     {error, "Too long message"};
 
@@ -33,24 +44,28 @@ send_sms(Login, Pass, Phones, Message, Opts) ->
                             Oplist, "&fmt=3", "&id=", uuid()]),
     get_reply(?URL ++ "send.php", Request, ?ERR_CODE).
 
-%% Send ping SMS
+%% @doc Send ping SMS.
+%% @end
 -spec(send_ping_sms(Login :: string(), Pass :: string(), Phone :: string()) -> {ok, Id :: string()} | {ok, Obj :: list()} | {error, Message :: binary()}).
 send_ping_sms(Login, Pass, Phone) ->
     Request = lists:concat(["login=", Login, "&psw=", Pass, "&phones=", Phone, "&ping=1&fmt=3", "&id=", uuid()]),
     get_reply(?URL ++ "send.php", Request, ?STATUS_CODE).
 
-%% Send flash SMS
+%% @doc Send flash SMS.
+%% @end
 -spec(send_flash_sms(Login :: string(), Pass :: string(), Phones :: list(), Message :: string()) -> {ok, Id :: string(), Num :: integer()} | {ok, Obj :: list()} | {error, Message :: binary()}).
 send_flash_sms(Login, Pass, Phones, Message) ->
     send_sms(Login, Pass, Phones, Message,[{flash,"1"}]).
 
-%% Send hlr request
+%% @doc Send HLR request.
+%% @end
 -spec(send_hlr(Login :: string(), Pass :: string(), Phones :: list()) -> {ok, Id :: string()} | {error, Message :: binary()}).
 send_hlr(Login, Pass, Phones) ->
     Request = lists:concat(["login=", Login, "&psw=", Pass, "&phones=", string:join(Phones, ";"), "&hlr=1&fmt=3", "&id=", uuid()]),
     get_reply(?URL ++ "send.php", Request, ?STATUS_CODE).
 
-%% Get sms/hlr status by Id
+%% @doc Get SMS/HLR status by Id
+%% @end
 -spec(get_status(Login :: string(), Pass :: string(), Phones :: list(), Ids :: list()) -> {ok, Reply :: list()} | {error, Message :: binary()}).
 get_status(Login, Pass, Phones, Ids) ->
     Request = lists:concat(["login=", Login, "&psw=", Pass, "&phone=", string:join(Phones, ","), "&fmt=3", "&id=", string:join(Ids, ",")]),
@@ -65,7 +80,8 @@ get_status(Login, Pass, Phones, Ids) ->
         Any -> Any
     end.
 
-%% Delete sms/hlr by Id
+%% @doc Delete SMS/HLR by Id
+%% @end
 -spec(del_req(Login :: string(), Pass :: string(), Phones :: list(), Ids :: list()) -> {ok, Reply :: list()} | {error, Message :: binary()}).
 del_req(Login, Pass, Phones, Ids) ->
     Request = lists:concat(["login=", Login, "&psw=", Pass, "&phone=", string:join(Phones, ","), "&fmt=3", "&id=", string:join(Ids, ","), "&del=1"]),
@@ -75,7 +91,8 @@ del_req(Login, Pass, Phones, Ids) ->
         Any -> Any
     end.
 
-%% Get balance
+%% @doc Get account balance and currency
+%% @end
 -spec(get_balance(Login :: string(), Pass :: string()) -> {ok, Balance :: string()} | {error, Message :: binary()}).
 get_balance(Login, Pass) ->
     Request = lists:concat(["login=", Login, "&psw=", Pass, "&cur=1&fmt=3"]),
@@ -85,13 +102,15 @@ get_balance(Login, Pass) ->
         Any -> Any
     end.
 
-%% Get operator
+%% @doc Get mobile operator information
+%% @end
 -spec(get_oper_info(Login :: string(), Pass :: string(), Phone :: string()) -> {ok, Info :: list()} | {error, Message :: binary()}).
 get_oper_info(Login, Pass, Phone) ->
     Request = lists:concat(["login=", Login, "&psw=", Pass, "&get_operator=1&fmt=3&phone=",Phone]),
     get_reply(?URL ++ "info.php", Request, ?OPER_CODE).
 
-%% Get account statistics
+%% @doc Get account statistics
+%% @end
 -spec(get_stat(Login :: string(), Pass :: string(), Start :: string(), End :: string()) -> {ok, Info :: list()} | {error, Message :: binary()}).
 get_stat(Login, Pass, Start, End) ->
     Request = lists:concat(["login=", Login, "&psw=", Pass, "&get_stat=1&fmt=3&mycur=1&start=",Start, "&end=",End]),

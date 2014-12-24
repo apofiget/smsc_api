@@ -4,3 +4,4 @@
     * ibrowse (https://github.com/cmullaparthi/ibrowse)
     * jsx (https://github.com/talentdeficit/jsx)
 
+See doc/ directory for functions description.
