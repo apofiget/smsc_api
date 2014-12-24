@@ -6,7 +6,7 @@
 
 -export([init/0, send_sms/5, send_hlr/3,
          get_status/4, del_req/4, get_balance/2,
-         get_oper_info/3, get_stat/4]).
+         get_oper_info/3, get_stat/4, send_ping_sms/3]).
 
 -spec(init() -> ok | {error, Message :: string()}).
 init() ->
@@ -19,7 +19,7 @@ init() ->
 %% Send SMS
 %% http://smsc.ru/api/http/#send - optional parameters described here
 %% All request send with fmt=3, i.e. wait JSON as answer body
--spec(send_sms(Login :: string(), Pass :: string(), Phones :: list(), Message :: string(), Opts :: list()) -> {ok, Id :: string()} | {ok, Obj :: list()} | {error, Message :: binary()}).
+-spec(send_sms(Login :: string(), Pass :: string(), Phones :: list(), Message :: string(), Opts :: list()) -> {ok, Id :: string(), Num :: integer()} | {ok, Obj :: list()} | {error, Message :: binary()}).
 send_sms(_Login, _Pass, _Phones, Message, _Opts) when length(Message) > 800 ->
     {error, "Too long message"};
 
@@ -28,6 +28,12 @@ send_sms(Login, Pass, Phones, Message, Opts) ->
     Request = lists:concat(["login=", Login, "&psw=", Pass, "&phones=", string:join(Phones, ";"), "&mes=", to_cp1251(Message),
                             Oplist, "&fmt=3", "&id=", uuid()]),
     get_reply(?URL ++ "send.php", Request, ?ERR_CODE).
+
+%% Send ping SMS
+-spec(send_ping_sms(Login :: string(), Pass :: string(), Phone :: string()) -> {ok, Id :: string()} | {ok, Obj :: list()} | {error, Message :: binary()}).
+send_ping_sms(Login, Pass, Phone) ->
+    Request = lists:concat(["login=", Login, "&psw=", Pass, "&phones=", Phone, "&ping=1&fmt=3", "&id=", uuid()]),
+    get_reply(?URL ++ "send.php", Request, ?STATUS_CODE).
 
 %% Send hlr request
 -spec(send_hlr(Login :: string(), Pass :: string(), Phones :: list()) -> {ok, Id :: string()} | {error, Message :: binary()}).
@@ -42,7 +48,7 @@ get_status(Login, Pass, Phones, Ids) ->
     case get_reply(?URL ++ "status.php", Request, ?STATUS_CODE) of
         {ok, Obj} ->
             Err = proplists:get_value(err, Obj),
-            if Err == 0 ->
+            if Err == 0; Err == undefined ->
                     {ok, Obj};
                true ->
                     {error, proplists:get_value(Err, ?SMS_HRL_ERR_CODE)}
@@ -96,7 +102,7 @@ get_reply(Url, Request, Err) ->
 decode_reply(Json, Err) ->
     try jsx:decode(Json, [{labels, atom}]) of
         Obj -> case proplists:get_value(error_code, Obj) of
-                   undefined -> try {ok, binary_to_list(proplists:get_value(id, Obj))}
+                   undefined -> try {ok, binary_to_list(proplists:get_value(id, Obj)), proplists:get_value(cnt, Obj)}
                                 catch _:_ -> {ok, Obj} end;
                    Code -> {error, proplists:get_value(Code, Err)}
                end
@@ -230,5 +236,5 @@ to_cp1251(Str) ->
 
 uuid() ->
     <<A:32, B:16, C:16, D:16, E:48>> = crypto:rand_bytes(16),
-    lists:concat(io_lib:format("~8.16.0b~4.16.0b4~3.16.0b~4.16.0b~12.16.0b", 
+    lists:concat(io_lib:format("~8.16.0b~4.16.0b4~3.16.0b~4.16.0b~12.16.0b",
                                [A, B, C band 16#0fff, D band 16#3fff bor 16#8000, E])).
