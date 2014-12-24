@@ -1,0 +1,4 @@
+@author Andrey Andruschenko <apofiget@gmail.com>
+@version 0.3
+@title SMSC API
+@doc Library provide none full Erlang implementation of SMSC API.

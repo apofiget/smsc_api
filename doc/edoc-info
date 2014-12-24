@@ -1,0 +1,4 @@
+%% encoding: UTF-8
+{application,smsc_lib}.
+{packages,[]}.
+{modules,[smsc_lib]}.
