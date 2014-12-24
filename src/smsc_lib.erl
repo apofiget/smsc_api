@@ -100,9 +100,10 @@ get_stat(Login, Pass, Start, End) ->
 %% Get JSON from application service
 %% @hidden
 get_reply(Url, Request, Err) ->
-    case ibrowse:send_req(Url, [{"Content-Type", "application/x-www-form-urlencoded"}], post, Request, [{response_format, binary}]) of
+    try ibrowse:send_req(Url, [{"Content-Type", "application/x-www-form-urlencoded"}], post, Request, [{response_format, binary}]) of
         {ok, "200", _Headers, Body} -> decode_reply(Body, Err);
         Any -> {error, Any}
+    catch _:Error -> {error, Error}
     end.
 
 %% Decode JSON and parse reply
