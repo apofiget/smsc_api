@@ -6,7 +6,8 @@
 
 -export([init/0, send_sms/5, send_hlr/3,
          get_status/4, del_req/4, get_balance/2,
-         get_oper_info/3, get_stat/4, send_ping_sms/3]).
+         get_oper_info/3, get_stat/4, send_ping_sms/3,
+         send_flash_sms/4]).
 
 -spec(init() -> ok | {error, Message :: string()}).
 init() ->
@@ -34,6 +35,11 @@ send_sms(Login, Pass, Phones, Message, Opts) ->
 send_ping_sms(Login, Pass, Phone) ->
     Request = lists:concat(["login=", Login, "&psw=", Pass, "&phones=", Phone, "&ping=1&fmt=3", "&id=", uuid()]),
     get_reply(?URL ++ "send.php", Request, ?STATUS_CODE).
+
+%% Send ping SMS
+-spec(send_flash_sms(Login :: string(), Pass :: string(), Phones :: list(), Message :: string()) -> {ok, Id :: string(), Num :: integer()} | {ok, Obj :: list()} | {error, Message :: binary()}).
+send_flash_sms(Login, Pass, Phones, Message) ->
+    send_sms(Login, Pass, Phones, Message,[{flash,"1"}]).
 
 %% Send hlr request
 -spec(send_hlr(Login :: string(), Pass :: string(), Phones :: list()) -> {ok, Id :: string()} | {error, Message :: binary()}).
