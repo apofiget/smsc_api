@@ -10,6 +10,9 @@ clean:
 	@rm -f erl_crash.dump
 	@rm -rf ./doc
 
+check:
+	@$(REBAR) dialyze
+
 doc:
 	@$(REBAR) doc
 

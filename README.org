@@ -1,7 +1,18 @@
 * Unofficial Erlang implementation of SMSC HTTP API
+
 ** Requirements
     * Rebar (https://github.com/basho/rebar)
     * ibrowse (https://github.com/cmullaparthi/ibrowse)
     * jsx (https://github.com/talentdeficit/jsx)
+
+** How to build
+Just execute in that directory: `make`
+
+** How to run
+Execute in that directory: `make start`
+
+** How to use in your project:
+Add: `{smsc_lib, ".*",{git, "git://github.com/apofiget/smsc_lib"}}`
+in your rebar.config `deps` section.
 
 See doc/ directory for functions description.
