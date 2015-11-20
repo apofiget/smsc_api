@@ -12,7 +12,7 @@
 -export([init/0, send_sms/5, send_hlr/3,
          get_status/4, del_req/4, get_balance/2,
          get_oper_info/3, get_stat/4, send_ping_sms/3,
-         send_flash_sms/4, get_answers/4]).
+         send_flash_sms/4, get_answers/3, get_answers_after_id/3]).
 
 -type opts() :: [option()].
 %% Send SMS options list
@@ -116,12 +116,22 @@ get_stat(Login, Pass, Start, End) ->
     Request = lists:concat(["login=", Login, "&psw=", Pass, "&get_stat=1&fmt=3&mycur=1&start=",Start, "&end=",End]),
     get_reply(?URL ++ "get.php", Request, ?OPER_CODE).
 
-%% @doc Get account statistics
+%% @doc Get incomig sms's
 %% @end
--spec(get_answers(Login :: string(), Pass :: string(), Hour :: integer(), AfterId :: string()) ->
+-spec(get_answers(Login :: string(), Pass :: string(), Hour :: integer()) ->
              {ok, Info :: list()} | {error, Message :: binary()}).
-get_answers(Login, Pass, Hour, AfterId) ->
-    Request = lists:concat(["?answers=1&login=", Login, "&psw=", Pass, "&hour",Hour, "&after_id=",AfterId]),
+get_answers(_Login, _Pass, Hour) when Hour < 1 ->
+    {error, <<"Hour must be more or equal that 1!">>};
+get_answers(Login, Pass, Hour) ->
+    Request = lists:concat(["get_answers=1&fmt=3", "&login=", Login, "&psw=", Pass, "&hour=",Hour]),
+    get_reply(?URL ++ "get.php", Request, ?OPER_CODE).
+
+%% @doc Get incomig sms's after given ID
+%% @end
+-spec(get_answers_after_id(Login :: string(), Pass :: string(), AfterId :: string()) ->
+             {ok, Info :: list()} | {error, Message :: binary()}).
+get_answers_after_id(Login, Pass, AfterId) ->
+    Request = lists:concat(["get_answers=1&fmt=3", "&login=", Login, "&psw=", Pass, "&after_id=",AfterId]),
     get_reply(?URL ++ "get.php", Request, ?OPER_CODE).
 
 %% Internals
