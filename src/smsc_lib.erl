@@ -1,6 +1,6 @@
 %% -*- coding: utf-8 -*-
 %% @author Andrey Andruschenko <apofiget@gmail.com>
-%% @version 0.3
+%% @version 0.4
 %% @doc Unofficial Erlang SMSC API
 %% @reference <a href="http://smsc.ru/api/">SMSC API description and code examples</a>;
 %% @end
@@ -13,7 +13,7 @@
          get_status/4, del_req/4, get_balance/2,
          get_oper_info/3, get_stat/4, send_ping_sms/3,
          send_flash_sms/4, get_answers/3, get_answers_after_id/3,
-         get_messages/3]).
+         get_messages/3, get_messages_by_phone/4]).
 
 -type error_details() :: {Reason :: atom(), Object :: binary()}.
 
@@ -164,6 +164,23 @@ get_messages(_Login, _Pass, Count) when Count < 1 ; Count > 100 ->
     {error, <<"Count should be more or equal that 0 and less or equal that 100!">>};
 get_messages(Login, Pass, Count) ->
     Request = lists:concat(["get_messages=1&fmt=3", "&login=", Login, "&psw=", Pass, "&cnt=",Count]),
+    get_reply(?URL ++ "get.php", Request, ?STATUS_CODE).
+
+%% @doc Get messages history for a specific phone(s)
+%% @end
+-spec(get_messages_by_phone(Login :: string(), Pass :: string(), Phones :: list(), Count :: integer()) ->
+             {ok, Info :: list()} | {error, Message :: binary()} | {parser_error, Details :: error_details()}).
+get_messages_by_phone(_Login, _Pass, [], _Count) ->
+    {error, <<"Empty phones list!">>};
+get_messages_by_phone(_Login, _Pass, _Phones, Count) when Count < 1 ; Count > 100 ->
+    {error, <<"Count should be more or equal that 0 and less or equal that 100!">>};
+get_messages_by_phone(Login, Pass, [H|T] = Phones, Count) ->
+    PhonesList = case T of
+                     [] -> H;
+                     _ -> string:join(Phones, ",")
+                 end,
+    Request = lists:concat(["get_messages=1&fmt=3", "&login=", Login, "&psw=", Pass, "&phone=",
+                            PhonesList, "&cnt=",Count]),
     get_reply(?URL ++ "get.php", Request, ?STATUS_CODE).
 
 %% Internals
