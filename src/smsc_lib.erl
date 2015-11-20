@@ -12,7 +12,10 @@
 -export([init/0, send_sms/5, send_hlr/3,
          get_status/4, del_req/4, get_balance/2,
          get_oper_info/3, get_stat/4, send_ping_sms/3,
-         send_flash_sms/4, get_answers/3, get_answers_after_id/3]).
+         send_flash_sms/4, get_answers/3, get_answers_after_id/3,
+         get_messages/3]).
+
+-type error_details() :: {Reason :: atom(), Object :: binary()}.
 
 -type opts() :: [option()].
 %% Send SMS options list
@@ -33,7 +36,10 @@ init() ->
 %% @doc Send SMS.
 %% Optional parameters described <a href="http://smsc.ru/api/http/#send">here</a>
 %% @end
--spec(send_sms(Login :: string(), Pass :: string(), Phones :: list(), Message :: string(), Opts :: opts()) -> {ok, Id :: string(), Num :: integer()} | {ok, Obj :: list()} | {error, Message :: binary()}).
+-spec(send_sms(Login :: string(), Pass :: string(), Phones :: list(), Message :: string(),
+               Opts :: opts()) -> {ok, Id :: string(), Num :: integer()} | {ok, Obj :: list()} |
+                                  {error, Message :: binary()} |
+                                  {parser_error, Details :: error_details()}).
 send_sms(_Login, _Pass, _Phones, Message, _Opts) when length(Message) > 800 ->
     {error, "Too long message"};
 
@@ -46,27 +52,35 @@ send_sms(Login, Pass, Phones, Message, Opts) ->
 
 %% @doc Send ping SMS.
 %% @end
--spec(send_ping_sms(Login :: string(), Pass :: string(), Phone :: string()) -> {ok, Id :: string()} | {ok, Obj :: list()} | {error, Message :: binary()}).
+-spec(send_ping_sms(Login :: string(), Pass :: string(), Phone :: string()) ->
+             {ok, Id :: string()} | {ok, Obj :: list()} | {error, Message :: binary()} |
+             {parser_error, Details :: error_details()}).
 send_ping_sms(Login, Pass, Phone) ->
     Request = lists:concat(["login=", Login, "&psw=", Pass, "&phones=", Phone, "&ping=1&fmt=3", "&id=", uuid()]),
     get_reply(?URL ++ "send.php", Request, ?STATUS_CODE).
 
 %% @doc Send flash SMS.
 %% @end
--spec(send_flash_sms(Login :: string(), Pass :: string(), Phones :: list(), Message :: string()) -> {ok, Id :: string(), Num :: integer()} | {ok, Obj :: list()} | {error, Message :: binary()}).
+-spec(send_flash_sms(Login :: string(), Pass :: string(), Phones :: list(), Message :: string()) ->
+             {ok, Id :: string(), Num :: integer()} | {ok, Obj :: list()} |
+             {error, Message :: binary()} | {parser_error, Details :: error_details()}).
 send_flash_sms(Login, Pass, Phones, Message) ->
     send_sms(Login, Pass, Phones, Message,[{flash,"1"}]).
 
 %% @doc Send HLR request.
 %% @end
--spec(send_hlr(Login :: string(), Pass :: string(), Phones :: list()) -> {ok, Id :: string()} | {error, Message :: binary()}).
+-spec(send_hlr(Login :: string(), Pass :: string(), Phones :: list()) ->
+             {ok, Id :: string()} | {error, Message :: binary()} |
+             {parser_error, Details :: error_details()}).
 send_hlr(Login, Pass, Phones) ->
     Request = lists:concat(["login=", Login, "&psw=", Pass, "&phones=", string:join(Phones, ";"), "&hlr=1&fmt=3", "&id=", uuid()]),
     get_reply(?URL ++ "send.php", Request, ?STATUS_CODE).
 
 %% @doc Get SMS/HLR status by Id
 %% @end
--spec(get_status(Login :: string(), Pass :: string(), Phones :: list(), Ids :: list()) -> {ok, Reply :: list()} | {error, Message :: binary()}).
+-spec(get_status(Login :: string(), Pass :: string(), Phones :: list(), Ids :: list()) ->
+             {ok, Reply :: list()} | {error, Message :: binary()} |
+             {parser_error, Details :: error_details()}).
 get_status(Login, Pass, Phones, Ids) ->
     Request = lists:concat(["login=", Login, "&psw=", Pass, "&phone=", string:join(Phones, ","), "&fmt=3", "&id=", string:join(Ids, ",")]),
     case get_reply(?URL ++ "status.php", Request, ?STATUS_CODE) of
@@ -82,7 +96,9 @@ get_status(Login, Pass, Phones, Ids) ->
 
 %% @doc Delete SMS/HLR by Id
 %% @end
--spec(del_req(Login :: string(), Pass :: string(), Phones :: list(), Ids :: list()) -> {ok, Reply :: list()} | {error, Message :: binary()}).
+-spec(del_req(Login :: string(), Pass :: string(), Phones :: list(), Ids :: list()) ->
+             {ok, Reply :: list()} | {error, Message :: binary()} |
+             {parser_error, Details :: error_details()}).
 del_req(Login, Pass, Phones, Ids) ->
     Request = lists:concat(["login=", Login, "&psw=", Pass, "&phone=", string:join(Phones, ","), "&fmt=3", "&id=", string:join(Ids, ","), "&del=1"]),
     case get_reply(?URL ++ "status.php", Request, ?STATUS_CODE) of
@@ -93,7 +109,9 @@ del_req(Login, Pass, Phones, Ids) ->
 
 %% @doc Get account balance and currency
 %% @end
--spec(get_balance(Login :: string(), Pass :: string()) -> {ok, Balance :: string()} | {error, Message :: binary()}).
+-spec(get_balance(Login :: string(), Pass :: string()) ->
+             {ok, Balance :: string()} | {error, Message :: binary()} |
+             {parser_error, Details :: error_details()}).
 get_balance(Login, Pass) ->
     Request = lists:concat(["login=", Login, "&psw=", Pass, "&cur=1&fmt=3"]),
     case get_reply(?URL ++ "balance.php", Request, ?BALANCE_CODE) of
@@ -104,14 +122,18 @@ get_balance(Login, Pass) ->
 
 %% @doc Get mobile operator information
 %% @end
--spec(get_oper_info(Login :: string(), Pass :: string(), Phone :: string()) -> {ok, Info :: list()} | {error, Message :: binary()}).
+-spec(get_oper_info(Login :: string(), Pass :: string(), Phone :: string()) ->
+             {ok, Info :: list()} | {error, Message :: binary()} |
+             {parser_error, Details :: error_details()}).
 get_oper_info(Login, Pass, Phone) ->
     Request = lists:concat(["login=", Login, "&psw=", Pass, "&get_operator=1&fmt=3&phone=",Phone]),
     get_reply(?URL ++ "info.php", Request, ?OPER_CODE).
 
 %% @doc Get account statistics
 %% @end
--spec(get_stat(Login :: string(), Pass :: string(), Start :: string(), End :: string()) -> {ok, Info :: list()} | {error, Message :: binary()}).
+-spec(get_stat(Login :: string(), Pass :: string(), Start :: string(), End :: string()) ->
+             {ok, Info :: list()} | {error, Message :: binary()} |
+             {parser_error, Details :: error_details()}).
 get_stat(Login, Pass, Start, End) ->
     Request = lists:concat(["login=", Login, "&psw=", Pass, "&get_stat=1&fmt=3&mycur=1&start=",Start, "&end=",End]),
     get_reply(?URL ++ "get.php", Request, ?OPER_CODE).
@@ -119,20 +141,30 @@ get_stat(Login, Pass, Start, End) ->
 %% @doc Get incomig sms's
 %% @end
 -spec(get_answers(Login :: string(), Pass :: string(), Hour :: integer()) ->
-             {ok, Info :: list()} | {error, Message :: binary()}).
+             {ok, Info :: list()} | {error, Message :: binary()} | {parser_error, Details :: error_details()}).
 get_answers(_Login, _Pass, Hour) when Hour < 1 ->
     {error, <<"Hour must be more or equal that 1!">>};
 get_answers(Login, Pass, Hour) ->
     Request = lists:concat(["get_answers=1&fmt=3", "&login=", Login, "&psw=", Pass, "&hour=",Hour]),
-    get_reply(?URL ++ "get.php", Request, ?OPER_CODE).
+    get_reply(?URL ++ "get.php", Request, ?BALANCE_CODE).
 
 %% @doc Get incomig sms's after given ID
 %% @end
 -spec(get_answers_after_id(Login :: string(), Pass :: string(), AfterId :: string()) ->
-             {ok, Info :: list()} | {error, Message :: binary()}).
+             {ok, Info :: list()} | {error, Message :: binary()} | {parser_error, Details :: error_details()}).
 get_answers_after_id(Login, Pass, AfterId) ->
     Request = lists:concat(["get_answers=1&fmt=3", "&login=", Login, "&psw=", Pass, "&after_id=",AfterId]),
-    get_reply(?URL ++ "get.php", Request, ?OPER_CODE).
+    get_reply(?URL ++ "get.php", Request, ?BALANCE_CODE).
+
+%% @doc Get messages history
+%% @end
+-spec(get_messages(Login :: string(), Pass :: string(), Count :: integer()) ->
+             {ok, Info :: list()} | {error, Message :: binary()} | {parser_error, Details :: error_details()}).
+get_messages(_Login, _Pass, Count) when Count < 1 ; Count > 100 ->
+    {error, <<"Count should be more or equal that 0 and less or equal that 100!">>};
+get_messages(Login, Pass, Count) ->
+    Request = lists:concat(["get_messages=1&fmt=3", "&login=", Login, "&psw=", Pass, "&cnt=",Count]),
+    get_reply(?URL ++ "get.php", Request, ?STATUS_CODE).
 
 %% Internals
 %% Get JSON from application service
@@ -149,12 +181,15 @@ get_reply(Url, Request, Err) ->
 decode_reply(Json, Err) ->
     try jsx:decode(Json, [{labels, atom}]) of
         Obj -> case proplists:get_value(error_code, Obj) of
-                   undefined -> try {ok, binary_to_list(proplists:get_value(id, Obj)), proplists:get_value(cnt, Obj)}
-                                catch _:_ -> {ok, Obj} end;
-                   Code -> {error, proplists:get_value(Code, Err)}
+                   undefined ->
+                       try {ok, binary_to_list(proplists:get_value(id, Obj)), proplists:get_value(cnt, Obj)}
+                       catch _:_ ->
+                               {ok, Obj} end;
+                   Code ->
+                       {error, proplists:get_value(Code, Err)}
                end
-    catch _:_ ->
-            {error, Json}
+    catch _:Reason ->
+            {parser_error, {Reason, Json}}
     end.
 
 

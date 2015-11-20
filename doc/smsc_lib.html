@@ -19,6 +19,10 @@
 <h2><a name="description">Description</a></h2>Unofficial Erlang SMSC API
 <h2><a name="types">Data Types</a></h2>
 
+<h3 class="typedecl"><a name="type-error_details">error_details()</a></h3>
+<p><tt>error_details() = {Reason::atom(), Object::binary()}</tt></p>
+
+
 <h3 class="typedecl"><a name="type-option">option()</a></h3>
 <p><tt>option() = {atom(), Some::term()}</tt></p>
 <p>  Send SMS option tuple. Options described <a href="http://smsc.ru/api/http/#send">here</a></p>
@@ -29,7 +33,10 @@
 
 <h2><a name="index">Function Index</a></h2>
 <table width="100%" border="1" cellspacing="0" cellpadding="2" summary="function index"><tr><td valign="top"><a href="#del_req-4">del_req/4</a></td><td>Delete SMS/HLR by Id.</td></tr>
+<tr><td valign="top"><a href="#get_answers-3">get_answers/3</a></td><td>Get incomig sms's.</td></tr>
+<tr><td valign="top"><a href="#get_answers_after_id-3">get_answers_after_id/3</a></td><td>Get incomig sms's after given ID.</td></tr>
 <tr><td valign="top"><a href="#get_balance-2">get_balance/2</a></td><td>Get account balance and currency.</td></tr>
+<tr><td valign="top"><a href="#get_messages-3">get_messages/3</a></td><td>Get messages history.</td></tr>
 <tr><td valign="top"><a href="#get_oper_info-3">get_oper_info/3</a></td><td>Get mobile operator information.</td></tr>
 <tr><td valign="top"><a href="#get_stat-4">get_stat/4</a></td><td>Get account statistics.</td></tr>
 <tr><td valign="top"><a href="#get_status-4">get_status/4</a></td><td>Get SMS/HLR status by Id.</td></tr>
@@ -44,27 +51,42 @@
 
 <h3 class="function"><a name="del_req-4">del_req/4</a></h3>
 <div class="spec">
-<p><tt>del_req(Login::string(), Pass::string(), Phones::list(), Ids::list()) -&gt; {ok, Reply::list()} | {error, Message::binary()}</tt><br></p>
+<p><tt>del_req(Login::string(), Pass::string(), Phones::list(), Ids::list()) -&gt; {ok, Reply::list()} | {error, Message::binary()} | {parser_error, Details::<a href="#type-error_details">error_details()</a>}</tt><br></p>
 </div><p>Delete SMS/HLR by Id</p>
+
+<h3 class="function"><a name="get_answers-3">get_answers/3</a></h3>
+<div class="spec">
+<p><tt>get_answers(Login::string(), Pass::string(), Hour::integer()) -&gt; {ok, Info::list()} | {error, Message::binary()} | {parser_error, Details::<a href="#type-error_details">error_details()</a>}</tt><br></p>
+</div><p>Get incomig sms's</p>
+
+<h3 class="function"><a name="get_answers_after_id-3">get_answers_after_id/3</a></h3>
+<div class="spec">
+<p><tt>get_answers_after_id(Login::string(), Pass::string(), AfterId::string()) -&gt; {ok, Info::list()} | {error, Message::binary()} | {parser_error, Details::<a href="#type-error_details">error_details()</a>}</tt><br></p>
+</div><p>Get incomig sms's after given ID</p>
 
 <h3 class="function"><a name="get_balance-2">get_balance/2</a></h3>
 <div class="spec">
-<p><tt>get_balance(Login::string(), Pass::string()) -&gt; {ok, Balance::string()} | {error, Message::binary()}</tt><br></p>
+<p><tt>get_balance(Login::string(), Pass::string()) -&gt; {ok, Balance::string()} | {error, Message::binary()} | {parser_error, Details::<a href="#type-error_details">error_details()</a>}</tt><br></p>
 </div><p>Get account balance and currency</p>
+
+<h3 class="function"><a name="get_messages-3">get_messages/3</a></h3>
+<div class="spec">
+<p><tt>get_messages(Login::string(), Pass::string(), Count::integer()) -&gt; {ok, Info::list()} | {error, Message::binary()} | {parser_error, Details::<a href="#type-error_details">error_details()</a>}</tt><br></p>
+</div><p>Get messages history</p>
 
 <h3 class="function"><a name="get_oper_info-3">get_oper_info/3</a></h3>
 <div class="spec">
-<p><tt>get_oper_info(Login::string(), Pass::string(), Phone::string()) -&gt; {ok, Info::list()} | {error, Message::binary()}</tt><br></p>
+<p><tt>get_oper_info(Login::string(), Pass::string(), Phone::string()) -&gt; {ok, Info::list()} | {error, Message::binary()} | {parser_error, Details::<a href="#type-error_details">error_details()</a>}</tt><br></p>
 </div><p>Get mobile operator information</p>
 
 <h3 class="function"><a name="get_stat-4">get_stat/4</a></h3>
 <div class="spec">
-<p><tt>get_stat(Login::string(), Pass::string(), Start::string(), End::string()) -&gt; {ok, Info::list()} | {error, Message::binary()}</tt><br></p>
+<p><tt>get_stat(Login::string(), Pass::string(), Start::string(), End::string()) -&gt; {ok, Info::list()} | {error, Message::binary()} | {parser_error, Details::<a href="#type-error_details">error_details()</a>}</tt><br></p>
 </div><p>Get account statistics</p>
 
 <h3 class="function"><a name="get_status-4">get_status/4</a></h3>
 <div class="spec">
-<p><tt>get_status(Login::string(), Pass::string(), Phones::list(), Ids::list()) -&gt; {ok, Reply::list()} | {error, Message::binary()}</tt><br></p>
+<p><tt>get_status(Login::string(), Pass::string(), Phones::list(), Ids::list()) -&gt; {ok, Reply::list()} | {error, Message::binary()} | {parser_error, Details::<a href="#type-error_details">error_details()</a>}</tt><br></p>
 </div><p>Get SMS/HLR status by Id</p>
 
 <h3 class="function"><a name="init-0">init/0</a></h3>
@@ -75,27 +97,27 @@
 
 <h3 class="function"><a name="send_flash_sms-4">send_flash_sms/4</a></h3>
 <div class="spec">
-<p><tt>send_flash_sms(Login::string(), Pass::string(), Phones::list(), Message::string()) -&gt; {ok, Id::string(), Num::integer()} | {ok, Obj::list()} | {error, Message::binary()}</tt><br></p>
+<p><tt>send_flash_sms(Login::string(), Pass::string(), Phones::list(), Message::string()) -&gt; {ok, Id::string(), Num::integer()} | {ok, Obj::list()} | {error, Message::binary()} | {parser_error, Details::<a href="#type-error_details">error_details()</a>}</tt><br></p>
 </div><p>Send flash SMS.</p>
 
 <h3 class="function"><a name="send_hlr-3">send_hlr/3</a></h3>
 <div class="spec">
-<p><tt>send_hlr(Login::string(), Pass::string(), Phones::list()) -&gt; {ok, Id::string()} | {error, Message::binary()}</tt><br></p>
+<p><tt>send_hlr(Login::string(), Pass::string(), Phones::list()) -&gt; {ok, Id::string()} | {error, Message::binary()} | {parser_error, Details::<a href="#type-error_details">error_details()</a>}</tt><br></p>
 </div><p>Send HLR request.</p>
 
 <h3 class="function"><a name="send_ping_sms-3">send_ping_sms/3</a></h3>
 <div class="spec">
-<p><tt>send_ping_sms(Login::string(), Pass::string(), Phone::string()) -&gt; {ok, Id::string()} | {ok, Obj::list()} | {error, Message::binary()}</tt><br></p>
+<p><tt>send_ping_sms(Login::string(), Pass::string(), Phone::string()) -&gt; {ok, Id::string()} | {ok, Obj::list()} | {error, Message::binary()} | {parser_error, Details::<a href="#type-error_details">error_details()</a>}</tt><br></p>
 </div><p>Send ping SMS.</p>
 
 <h3 class="function"><a name="send_sms-5">send_sms/5</a></h3>
 <div class="spec">
-<p><tt>send_sms(Login::string(), Pass::string(), Phones::list(), Message::string(), Opts::<a href="#type-opts">opts()</a>) -&gt; {ok, Id::string(), Num::integer()} | {ok, Obj::list()} | {error, Message::binary()}</tt><br></p>
+<p><tt>send_sms(Login::string(), Pass::string(), Phones::list(), Message::string(), Opts::<a href="#type-opts">opts()</a>) -&gt; {ok, Id::string(), Num::integer()} | {ok, Obj::list()} | {error, Message::binary()} | {parser_error, Details::<a href="#type-error_details">error_details()</a>}</tt><br></p>
 </div><p>Send SMS.
   Optional parameters described <a href="http://smsc.ru/api/http/#send">here</a></p>
 <hr>
 
 <div class="navbar"><a name="#navbar_bottom"></a><table width="100%" border="0" cellspacing="0" cellpadding="2" summary="navigation bar"><tr><td><a href="overview-summary.html" target="overviewFrame">Overview</a></td><td><a href="http://www.erlang.org/"><img src="erlang.png" align="right" border="0" alt="erlang logo"></a></td></tr></table></div>
-<p><i>Generated by EDoc, Dec 24 2014, 16:01:58.</i></p>
+<p><i>Generated by EDoc, Nov 20 2015, 12:56:05.</i></p>
 </body>
 </html>
