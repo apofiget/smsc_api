@@ -37,7 +37,7 @@ init() ->
 %% Optional parameters described <a href="http://smsc.ru/api/http/#send">here</a>
 %% @end
 -spec(send_sms(Login :: string(), Pass :: string(), Phones :: list(), Message :: string(),
-               Opts :: opts()) -> {ok, Id :: string(), Num :: integer()} | {ok, Obj :: list()} |
+               Opts :: opts()) -> {ok, Obj :: list()} |
                                   {error, Message :: binary()} |
                                   {parser_error, Details :: error_details()}).
 send_sms(_Login, _Pass, _Phones, Message, _Opts) when length(Message) > 800 ->
@@ -53,7 +53,7 @@ send_sms(Login, Pass, Phones, Message, Opts) ->
 %% @doc Send ping SMS.
 %% @end
 -spec(send_ping_sms(Login :: string(), Pass :: string(), Phone :: string()) ->
-             {ok, Id :: string()} | {ok, Obj :: list()} | {error, Message :: binary()} |
+             {ok, Obj :: list()} | {error, Message :: binary()} |
              {parser_error, Details :: error_details()}).
 send_ping_sms(Login, Pass, Phone) ->
     Request = lists:concat(["login=", Login, "&psw=", Pass, "&phones=", Phone, "&ping=1&fmt=3", "&id=", uuid()]),
@@ -62,7 +62,7 @@ send_ping_sms(Login, Pass, Phone) ->
 %% @doc Send flash SMS.
 %% @end
 -spec(send_flash_sms(Login :: string(), Pass :: string(), Phones :: list(), Message :: string()) ->
-             {ok, Id :: string(), Num :: integer()} | {ok, Obj :: list()} |
+             {ok, Obj :: list()} |
              {error, Message :: binary()} | {parser_error, Details :: error_details()}).
 send_flash_sms(Login, Pass, Phones, Message) ->
     send_sms(Login, Pass, Phones, Message,[{flash,"1"}]).
@@ -70,7 +70,7 @@ send_flash_sms(Login, Pass, Phones, Message) ->
 %% @doc Send HLR request.
 %% @end
 -spec(send_hlr(Login :: string(), Pass :: string(), Phones :: list()) ->
-             {ok, Id :: string()} | {error, Message :: binary()} |
+             {error, Message :: binary()} |
              {parser_error, Details :: error_details()}).
 send_hlr(Login, Pass, Phones) ->
     Request = lists:concat(["login=", Login, "&psw=", Pass, "&phones=", string:join(Phones, ";"), "&hlr=1&fmt=3", "&id=", uuid()]),
@@ -199,9 +199,7 @@ decode_reply(Json, Err) ->
     try jsx:decode(Json, [{labels, atom}]) of
         Obj -> case proplists:get_value(error_code, Obj) of
                    undefined ->
-                       try {ok, binary_to_list(proplists:get_value(id, Obj)), proplists:get_value(cnt, Obj)}
-                       catch _:_ ->
-                               {ok, Obj} end;
+                       {ok, Obj};
                    Code ->
                        {error, proplists:get_value(Code, Err)}
                end
