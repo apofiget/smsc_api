@@ -138,7 +138,7 @@ get_stat(Login, Pass, Start, End) ->
     Request = lists:concat(["login=", Login, "&psw=", Pass, "&get_stat=1&fmt=3&mycur=1&start=",Start, "&end=",End]),
     get_reply(?URL ++ "get.php", Request, ?OPER_CODE).
 
-%% @doc Get incomig sms's
+%% @doc Get incoming sms messages
 %% @end
 -spec(get_answers(Login :: string(), Pass :: string(), Hour :: integer()) ->
              {ok, Info :: list()} | {error, Message :: binary()} | {parser_error, Details :: error_details()}).
@@ -148,7 +148,7 @@ get_answers(Login, Pass, Hour) ->
     Request = lists:concat(["get_answers=1&fmt=3", "&login=", Login, "&psw=", Pass, "&hour=",Hour]),
     get_reply(?URL ++ "get.php", Request, ?BALANCE_CODE).
 
-%% @doc Get incomig sms's after given ID
+%% @doc Get incoming sms messages after given ID
 %% @end
 -spec(get_answers_after_id(Login :: string(), Pass :: string(), AfterId :: string()) ->
              {ok, Info :: list()} | {error, Message :: binary()} | {parser_error, Details :: error_details()}).
