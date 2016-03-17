@@ -36,7 +36,7 @@ init() ->
 %% @doc Send SMS.
 %% Optional parameters described <a href="http://smsc.ru/api/http/#send">here</a>
 %% @end
--spec(send_sms(Login :: string(), Pass :: string(), Phones :: list(), Message :: string(),
+-spec(send_sms(Login :: string(), Pass :: string(), Phones :: [string()], Message :: string(),
                Opts :: opts()) -> {ok, Obj :: list()} |
                                   {error, Message :: binary()} |
                                   {parser_error, Details :: error_details()}).
@@ -61,7 +61,7 @@ send_ping_sms(Login, Pass, Phone) ->
 
 %% @doc Send flash SMS.
 %% @end
--spec(send_flash_sms(Login :: string(), Pass :: string(), Phones :: list(), Message :: string()) ->
+-spec(send_flash_sms(Login :: string(), Pass :: string(), Phones :: [string()], Message :: string()) ->
              {ok, Obj :: list()} |
              {error, Message :: binary()} | {parser_error, Details :: error_details()}).
 send_flash_sms(Login, Pass, Phones, Message) ->
@@ -69,7 +69,7 @@ send_flash_sms(Login, Pass, Phones, Message) ->
 
 %% @doc Send HLR request.
 %% @end
--spec(send_hlr(Login :: string(), Pass :: string(), Phones :: list()) ->
+-spec(send_hlr(Login :: string(), Pass :: string(), Phones :: [string()]) ->
              {error, Message :: binary()} |
              {parser_error, Details :: error_details()}).
 send_hlr(Login, Pass, Phones) ->
@@ -78,7 +78,7 @@ send_hlr(Login, Pass, Phones) ->
 
 %% @doc Get SMS/HLR status by Id
 %% @end
--spec(get_status(Login :: string(), Pass :: string(), Phones :: list(), Ids :: list()) ->
+-spec(get_status(Login :: string(), Pass :: string(), Phones :: [string()], Ids :: list()) ->
              {ok, Reply :: list()} | {error, Message :: binary()} |
              {parser_error, Details :: error_details()}).
 get_status(Login, Pass, Phones, Ids) ->
@@ -96,7 +96,7 @@ get_status(Login, Pass, Phones, Ids) ->
 
 %% @doc Delete SMS/HLR by Id
 %% @end
--spec(del_req(Login :: string(), Pass :: string(), Phones :: list(), Ids :: list()) ->
+-spec(del_req(Login :: string(), Pass :: string(), Phones :: [string()], Ids :: list()) ->
              {ok, Reply :: list()} | {error, Message :: binary()} |
              {parser_error, Details :: error_details()}).
 del_req(Login, Pass, Phones, Ids) ->
@@ -138,7 +138,7 @@ get_stat(Login, Pass, Start, End) ->
     Request = lists:concat(["login=", Login, "&psw=", Pass, "&get_stat=1&fmt=3&mycur=1&start=",Start, "&end=",End]),
     get_reply(?URL ++ "get.php", Request, ?OPER_CODE).
 
-%% @doc Get incomig sms's
+%% @doc Get incoming sms messages
 %% @end
 -spec(get_answers(Login :: string(), Pass :: string(), Hour :: integer()) ->
              {ok, Info :: list()} | {error, Message :: binary()} | {parser_error, Details :: error_details()}).
@@ -148,7 +148,7 @@ get_answers(Login, Pass, Hour) ->
     Request = lists:concat(["get_answers=1&fmt=3", "&login=", Login, "&psw=", Pass, "&hour=",Hour]),
     get_reply(?URL ++ "get.php", Request, ?BALANCE_CODE).
 
-%% @doc Get incomig sms's after given ID
+%% @doc Get incoming sms messages after given ID
 %% @end
 -spec(get_answers_after_id(Login :: string(), Pass :: string(), AfterId :: string()) ->
              {ok, Info :: list()} | {error, Message :: binary()} | {parser_error, Details :: error_details()}).
@@ -168,7 +168,7 @@ get_messages(Login, Pass, Count) ->
 
 %% @doc Get messages history for a specific phone(s)
 %% @end
--spec(get_messages_by_phone(Login :: string(), Pass :: string(), Phones :: list(), Count :: integer()) ->
+-spec(get_messages_by_phone(Login :: string(), Pass :: string(), Phones :: [string()], Count :: integer()) ->
              {ok, Info :: list()} | {error, Message :: binary()} | {parser_error, Details :: error_details()}).
 get_messages_by_phone(_Login, _Pass, [], _Count) ->
     {error, <<"Empty phones list!">>};

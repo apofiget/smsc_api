@@ -53,7 +53,7 @@
                             {254, <<"Запрещенный sender id"/utf8>>},
                             {255, <<"Отклонено оператором"/utf8>>}]).
 
-%% Error code when try ti check balance
+%% Error code when try to check balance
 -define(BALANCE_CODE, [{1, <<"Ошибка в параметрах."/utf8>>},
                        {2, <<"Неверный логин или пароль."/utf8>>},
                        {4, <<"IP-адрес временно заблокирован."/utf8>>},
